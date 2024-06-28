@@ -9,16 +9,8 @@ const getAll = catchError(async(req, res) => {
 });
 
 const create = catchError(async(req, res) => {
-    const result = await model.create(req.body);
+    const result = await User.create(req.body);
     return res.status(201).json(result);
-});
-
-
-const getOne = catchError(async(req, res) => {
-    const { id } = req.params;
-    const result = await User.findByPk(id);
-    if(!result) return res.sendStatus(404);
-    return res.json(result);
 });
 
 const remove = catchError(async(req, res) => {
@@ -31,9 +23,15 @@ const remove = catchError(async(req, res) => {
 const update = catchError(async(req, res) => {
     const { id } = req.params;
 
-    // const fieldsRemove = [password, email]
-    // fieldsRemove.forEach((field)=>delete req.body)
+    // formas de hacer el delete
+    //1
+    // const fieldsRemove = ["password", "email"]
+    // fieldsRemove.forEach((field)=>delete req.body[field])
 
+    //2
+    // const{password, email, ...rest}= req.body
+
+    
     delete req.body.password
     delete req.body.email
 
@@ -48,6 +46,7 @@ const update = catchError(async(req, res) => {
 const login = catchError(async(req, res) => {
     const { email, password } = req.body;
     const user = await User.findOne({ where: {email} });
+  
     if(!user) return res.status(401).json({ error: "Invalid credentials"})
 
     const isValid = await bcrypt.compare(password, user.password)
@@ -55,17 +54,17 @@ const login = catchError(async(req, res) => {
 
     const token = jwt.sign(
 		{user},
-		process.env.TOKEN_SECRET,
-		{ expiresIn: '30d' } 
+		process.env.TOKEN_SECRET
 )
 
-    return res.status(201).json({user, token});
+// console.log(token)
+
+    return res.status(200).json({user, token});
 })
 
 module.exports = {
     getAll,
     create,
-    getOne,
     remove,
     update,
     login
