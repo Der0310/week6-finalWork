@@ -1,11 +1,18 @@
 require('../models')
 const request = require('supertest')
 const app = require('../app')
+const ProductImg = require('../models/ProductImg')
+const Category = require('../models/Category')
+const Product = require('../models/Product')
+
 
 const BASE_URL = '/api/v1/products'
 const BASE_URL_USERS = '/api/v1/users'
 let TOKEN
+let product
 let productId
+let image
+let category
 
 beforeAll(async ()=>{
     const body = {
@@ -17,12 +24,24 @@ beforeAll(async ()=>{
     .send(body)
 
 TOKEN = res.body.token
+
+category = await Category.create({
+    name:'Electronics'
 })
-const product ={
+
+ product ={
     title: 'Iphone 11',
     description: 'Apple phone with IOS software',
-    price: '599$'
+    price: '599',
+    categoryId:category.id
 }
+
+})
+
+afterAll(async()=> {
+    await image.destroy(),
+await category.destroy()})
+
 test("Post->'BASE_URL' should return status 201 and res.body.title===product.title", async()=>{
  
     const res = await request(app)
@@ -68,6 +87,23 @@ test("Put->'BASE_URL/:Id should return status 200 and res.body.title===updatedPr
     expect(res.status).toBe(200)
     expect(res.body).toBeDefined()
     expect(res.body.title).toBe(updatedProduct.title)
+})
+
+test("Post -> 'BASE_URL/:Id/product_images' should return status 200 and res.body.lenght ===1", async()=>{
+    image = await ProductImg.create({
+        url:'lorem.jpg',
+        filename:'proof_or_image',
+    })
+console.log(image)
+    const res = await request(app)
+    .post(`${BASE_URL}/${productId}/images`)
+    .set("Authorization", `Bearer ${TOKEN}`)
+    .send([image.id])
+
+    expect(res.status).toBe(200)
+    expect(res.body).toBeDefined()
+    expect(res.body).toHaveLength(1)
+
 })
 test("Delete->'BASE_URL/:Id' should return status 204", async()=>{
     const res = await request(app)

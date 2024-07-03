@@ -28,7 +28,7 @@ beforeAll(async () => {
     product = await Product.create({
         title: 'Iphone 11',
         description: 'Apple phone with IOS software',
-        price: '599$'
+        price: '599'
     })
    
 })
